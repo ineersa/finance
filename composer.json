@@ -7,7 +7,10 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/doctrine-migrations-bundle": "^3.4",
         "easycorp/easyadmin-bundle": "^4.24",
+        "gedmo/doctrine-extensions": "^3.20",
+        "stof/doctrine-extensions-bundle": "^1.14",
         "symfony/asset": "7.3.*",
         "symfony/asset-mapper": "7.3.*",
         "symfony/console": "7.3.*",
@@ -74,6 +77,7 @@
         }
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "*",
         "symfony/maker-bundle": "^1.64"
     }
 }
