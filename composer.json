@@ -17,6 +17,8 @@
         "symfony/dotenv": "7.3.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.3.*",
+        "symfony/monolog-bundle": "^3.10",
+        "symfony/rate-limiter": "7.3.*",
         "symfony/runtime": "7.3.*",
         "symfony/security-bundle": "7.3.*",
         "symfony/stimulus-bundle": "^2.27",
@@ -78,6 +80,7 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "*",
-        "symfony/maker-bundle": "^1.64"
+        "symfony/maker-bundle": "^1.64",
+        "symfony/web-profiler-bundle": "7.3.*"
     }
 }

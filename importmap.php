@@ -16,10 +16,24 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'welcome' => [
+        'path' => './assets/welcome.js',
+        'entrypoint' => true,
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
     '@symfony/stimulus-bundle' => [
         'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
+    ],
+    'bootstrap' => [
+        'version' => '5.3.7',
+    ],
+    '@popperjs/core' => [
+        'version' => '2.11.8',
+    ],
+    'bootstrap/dist/css/bootstrap.min.css' => [
+        'version' => '5.3.7',
+        'type' => 'css',
     ],
 ];

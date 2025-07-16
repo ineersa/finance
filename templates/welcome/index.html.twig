@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en_US">
+    <head>
+        <meta charset="UTF-8">
+        <title>FinanceApp – Manage Your Money</title>
+        <link rel="icon" href="{{ asset('icons/favicon.svg') }}" type="image/svg+xml">
+        {% block stylesheets %}
+        {% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('welcome') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body class="d-flex flex-column min-vh-100">
+    <main class="flex-grow-1">
+        {# Hero header #}
+        <header class="bg-primary text-white text-center py-5 mb-4">
+            <div class="container">
+                <h1 class="display-4">Personal Finance App</h1>
+                <p class="lead">Your personal finance manager—track, budget, and grow.</p>
+                <a href="{{ path('app_login') }}" class="btn btn-light btn-lg mt-3">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            </div>
+        </header>
+
+        <section class="container mb-5">
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-wallet2 display-4 text-primary"></i>
+                            <h5 class="card-title mt-3">Track Transactions</h5>
+                            <p class="card-text">Log incomes &amp; expenses, and see exactly where every dollar goes.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-bar-chart-line display-4 text-primary"></i>
+                            <h5 class="card-title mt-3">Visual Reports</h5>
+                            <p class="card-text">Get charts of your spending habits, savings goals and budget usage.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-file-earmark-pdf display-4 text-primary"></i>
+                            <h5 class="card-title mt-3">Statements processing</h5>
+                            <p class="card-text">Load your statements and let automated system handle them.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-light py-3">
+        <div class="container text-center">
+            &copy; {{ "now"|date("Y") }} Personal Finance App.
+        </div>
+    </footer>
+    </body>
+</html>

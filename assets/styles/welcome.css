@@ -1,0 +1,18 @@
+/* subtle page‐wide background */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Hero gradient instead of flat blue */
+header {
+    background: linear-gradient(135deg, #0062e6 0%, #33aeff 100%);
+}
+
+/* feature‐cards: lift & shadow on hover */
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}

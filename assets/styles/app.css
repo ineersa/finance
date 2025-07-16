@@ -1,3 +1,73 @@
 body {
     background-color: skyblue;
 }
+
+/* override Bootstrap’s primary color */
+:root {
+    --bs-primary:      #0062e6;
+    --bs-primary-rgb:  0, 98, 230;
+    --button-primary-bg: #0056b3;
+}
+
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color:     var(--bs-primary);
+}
+
+
+
+/* page background */
+body.ea-login {
+    background-color: #f0f2f5;
+}
+
+/* logo/header */
+#header-logo {
+    text-align: center;
+    margin: 2rem 0 1rem;
+}
+#header-logo .logo {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #0062e6;
+}
+
+/* center the form container */
+.ea-login .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 2rem;
+}
+
+/* the white card around the form */
+.ea-login .auth-container .login-form form {
+    background: #fff;
+    padding: 2rem;
+    border-radius: .5rem;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+/* spacing for each field */
+.ea-login .auth-container .login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* nicer inputs */
+.ea-login .auth-container .login-form .form-control {
+    border-radius: .25rem;
+}
+
+/* primary button styling */
+.ea-login .auth-container .login-form .btn-primary {
+    background-color: #0062e6;
+    border-color: #0056b3;
+    width: 100%;
+    padding: .75rem;
+    font-size: 1rem;
+}
+.ea-login .auth-container .login-form .btn-primary:hover {
+    background-color: #0056b3;
+}

@@ -13,6 +13,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * ./bin/console app:create-user admin@test.com admin --role=ROLE_ADMIN.
+ */
 #[AsCommand(
     name: 'app:create-user',
     description: 'Create new user',

@@ -14,17 +14,23 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            pattern: ^/
             lazy: true
             provider: app_user_provider
+            entry_point: form_login
             form_login:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
+                csrf_token_id: authenticate
+                csrf_parameter: _csrf_token
             logout:
                 path: app_logout
                 # where to redirect after logout
-                # target: app_any_route
-
+                target: app_login
+            login_throttling:
+                max_attempts: 3
+                interval: '2 minutes'
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
@@ -36,6 +42,11 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/$, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/home, roles: [ ROLE_ADMIN ] }
+        # Allows accessing the symfony profiler. These routes only exist in dev
+        - { path: ^/_(profiler|wdt), roles: PUBLIC_ACCESS }
 
 when@test:
     security:

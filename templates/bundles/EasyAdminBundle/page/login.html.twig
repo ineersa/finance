@@ -1,0 +1,13 @@
+{# templates/bundles/EasyAdminBundle/page/login.html.twig #}
+{% extends '@!EasyAdmin/page/login.html.twig' %}
+
+{% block head_favicon %}
+    <link rel="shortcut icon"
+          href="{{ asset('icons/favicon.svg') }}"
+          type="image/svg+xml">
+{% endblock %}
+
+{% block head_stylesheets %}
+    <link rel="stylesheet" href="{{ asset('app.css', constant('EasyCorp\\Bundle\\EasyAdminBundle\\Asset\\AssetPackage::PACKAGE_NAME')) }}">
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+{% endblock %}
