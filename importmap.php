@@ -16,6 +16,10 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'admin' => [
+        'path' => './assets/admin.js',
+        'entrypoint' => true,
+    ],
     'welcome' => [
         'path' => './assets/welcome.js',
         'entrypoint' => true,
@@ -35,5 +39,8 @@ return [
     'bootstrap/dist/css/bootstrap.min.css' => [
         'version' => '5.3.7',
         'type' => 'css',
+    ],
+    '@symfony/ux-toggle-password' => [
+        'version' => '2.28.2',
     ],
 ];

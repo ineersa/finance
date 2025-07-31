@@ -1,0 +1,10 @@
+{# templates/bundles/EasyAdminBundle/crud/form_theme.html.twig #}
+{% extends '@!EasyAdmin/crud/form_theme.html.twig' %}
+
+{%- block password_widget -%}
+    {%- set type = type|default('password') -%}
+    <div class="{{ toggle_container_classes|join(' ') }}">
+        {{ block('form_widget_simple') }}
+    </div>
+{%- endblock password_widget -%}
+
