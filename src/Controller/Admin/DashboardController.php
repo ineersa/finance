@@ -8,11 +8,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\HttpFoundation\Response;
 
 #[AdminDashboard(routePath: '/home', routeName: 'home')]
 class DashboardController extends AbstractDashboardController
 {
+    public function __construct(
+        private readonly Packages $packages,
+    ) {
+    }
+
     public function configureAssets(): Assets
     {
         return Assets::new()
@@ -27,15 +33,15 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('Finance');
+            ->setTitle('Finance dashboard')
+            ->setFaviconPath($this->packages->getUrl('icons/favicon.svg'));
     }
 
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
 
+        yield MenuItem::section('Administrative');
         yield MenuItem::linkToCrud('Users', 'fa fa-solid fa-users', User::class);
-
-        // yield MenuItem::linkToCrud('The Label', 'fas fa-list', EntityClass::class);
     }
 }
