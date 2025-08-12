@@ -1,0 +1,8 @@
+{% if field.value %}
+    <span class="d-flex align-items-center">
+        <i class="{{ field.value }}" style="margin-right: 8px; width: 16px;"></i>
+        <span>{{ field.value }}</span>
+    </span>
+{% else %}
+    <span class="text-muted">No icon</span>
+{% endif %}
