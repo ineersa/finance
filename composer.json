@@ -80,6 +80,7 @@
         "phpunit": "vendor/bin/phpunit --colors=always",
         "test": [
             "./bin/console cache:clear --env=test",
+            "./bin/console doctrine:database:drop --force --env=test",
             "./bin/console doctrine:schema:create --no-interaction --env=test",
             "./bin/console doctrine:fixtures:load --no-interaction --env=test",
             "phpunit"

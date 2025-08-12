@@ -1,6 +1,11 @@
-# Junie Development Guide
+# Gemini Development Guide
 
 This document provides essential information for developers working on the Finance App project.
+
+**Important rules for project**:
+- Use `composer` to install dependencies
+- If working on tests, try to not modify actual code unless bug was found or specifically requested/got permission from the project owner
+- Run tests to ensure proper functionality, including checking functionality by running browser tools
 
 ## Build and Configuration
 
@@ -108,6 +113,7 @@ This command automatically:
 
 ```bash
 php bin/console cache:clear --env=test
+php bin/console doctrine:database:drop --force --env=test
 php bin/console doctrine:schema:create --no-interaction --env=test
 php bin/console doctrine:fixtures:load --no-interaction --env=test
 php bin/phpunit
@@ -207,7 +213,8 @@ All entities use modern Symfony 7.3 features and PHP 8.2+ attributes for configu
 ```bash
 # Database
 php bin/console doctrine:migrations:migrate
-php bin/console doctrine:database:create --env=test
+./bin/console doctrine:database:drop --force --env=test
+./bin/console doctrine:schema:create --no-interaction --env=test
 
 # Code Quality
 composer cs-fix
@@ -230,6 +237,10 @@ You can test functionality in the browser at: http://finance.ineersa.local/
 - Email: admin@test.com
 - Password: admin
 
+**Important Note**:
+If credentials are incorrect, reload fixtures
+If getting invalid CSRF token error, try to clear cookies and restart the browser
+
 Always test new functionality and changes using browser developer tools to ensure proper behavior.
 
 ## Important Notes for Development
@@ -239,3 +250,4 @@ Always test new functionality and changes using browser developer tools to ensur
 - The project uses modern Doctrine attributes instead of annotations
 - Gedmo extensions are available for entities (timestampable, sluggable, etc.)
 - EasyAdmin is configured for admin interface development
+
