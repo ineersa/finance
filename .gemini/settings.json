@@ -1,0 +1,26 @@
+{
+    "theme": "Default",
+    "selectedAuthType": "gemini-api-key",
+    "mcpServers": {
+        "mysql-server": {
+            "command": "php",
+            "args": [
+                "/home/ineersa/mcp-servers/mysql-server/bin/console",
+                "app:query-server"
+            ],
+            "env": {
+                "DATABASE_URL": "mysql://mcp_user:mcp_password@127.0.0.1:3306/finance?serverVersion=8.0.32&charset=utf8mb4"
+            }
+        },
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp"
+            ],
+            "env": {
+                "PATH": "/home/ineersa/.pyenv/shims:/home/ineersa/.pyenv/bin:/home/ineersa/.turso:/home/ineersa/.nvm/versions/node/v22.18.0/bin:/home/ineersa/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/ineersa/.local/share/JetBrains/Toolbox/scripts:/home/ineersa/go/bin:/usr/local/go/bin:/home/ineersa/.lmstudio/bin:/home/ineersa/go/bin:/usr/local/go/bin:/home/ineersa/.config/composer/vendor/bin:/home/ineersa/.lmstudio/bin:/home/ineersa/.local/bin"
+            }
+        }
+    }
+}

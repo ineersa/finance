@@ -57,7 +57,7 @@ class AppCreateUserCommand extends Command
             ->findOneBy(['email' => $email]);
 
         if ($existing) {
-            $io->error(sprintf('A user with email "%s" already exists.', $email));
+            $io->error(\sprintf('A user with email "%s" already exists.', $email));
 
             return Command::FAILURE;
         }
@@ -70,7 +70,7 @@ class AppCreateUserCommand extends Command
         $this->em->persist($user);
         $this->em->flush();
 
-        $io->success(sprintf('Admin user "%s" created with roles: %s', $email, implode(', ', $roles)));
+        $io->success(\sprintf('Admin user "%s" created with roles: %s', $email, implode(', ', $roles)));
 
         return Command::SUCCESS;
     }
