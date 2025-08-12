@@ -23,6 +23,8 @@ This is a Symfony 7 project. The following are the basic steps to get the projec
     php bin/console doctrine:migrations:migrate
     ```
 
+**Important Note on Environment Files**: Any files ending in `.local` (e.g., `.env.local`, `.env.dev.local`) are intended for local overrides and should **never** be modified by automated tooling. These files are specific to your local environment.
+
 ## Testing
 
 The project uses PHPUnit for testing.

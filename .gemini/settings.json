@@ -21,6 +21,14 @@
             "env": {
                 "PATH": "/home/ineersa/.pyenv/shims:/home/ineersa/.pyenv/bin:/home/ineersa/.turso:/home/ineersa/.nvm/versions/node/v22.18.0/bin:/home/ineersa/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/ineersa/.local/share/JetBrains/Toolbox/scripts:/home/ineersa/go/bin:/usr/local/go/bin:/home/ineersa/.lmstudio/bin:/home/ineersa/go/bin:/usr/local/go/bin:/home/ineersa/.config/composer/vendor/bin:/home/ineersa/.lmstudio/bin:/home/ineersa/.local/bin"
             }
+        },
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "@playwright/mcp@latest",
+                "--allowed-origins=*.ineersa.local",
+                "--browser=firefox"
+            ]
         }
     }
 }

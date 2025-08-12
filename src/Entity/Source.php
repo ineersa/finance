@@ -5,11 +5,15 @@ namespace App\Entity;
 use App\Repository\SourceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 #[ORM\Entity(repositoryClass: SourceRepository::class)]
 class Source
 {
+    use TimestampableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -23,6 +27,12 @@ class Source
      */
     #[ORM\OneToMany(targetEntity: Statement::class, mappedBy: 'source')]
     private Collection $statements;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $ai_instruction = null;
 
     public function __construct()
     {
@@ -72,6 +82,30 @@ class Source
                 $statement->setSource(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getAiInstruction(): ?string
+    {
+        return $this->ai_instruction;
+    }
+
+    public function setAiInstruction(?string $ai_instruction): static
+    {
+        $this->ai_instruction = $ai_instruction;
 
         return $this;
     }
