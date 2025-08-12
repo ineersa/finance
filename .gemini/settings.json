@@ -27,7 +27,8 @@
             "args": [
                 "@playwright/mcp@latest",
                 "--allowed-origins=*.ineersa.local",
-                "--browser=firefox"
+                "--browser=chrome",
+                "--executable-path=/usr/bin/google-chrome-stable"
             ]
         }
     }

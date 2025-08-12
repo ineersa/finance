@@ -9,3 +9,5 @@ Personal finance dashboard
 ```bash
 ./vendor/bin/php-cs-fixer fix src
 ```
+
+To run tests need to ensure that `/var/www/finance/var/data/test.sqlite` exists.

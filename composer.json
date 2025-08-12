@@ -76,6 +76,13 @@
         "lint": [
             "@cs-fix",
             "@phpstan"
+        ],
+        "phpunit": "vendor/bin/phpunit --colors=always",
+        "test": [
+            "./bin/console cache:clear --env=test",
+            "./bin/console doctrine:schema:create --no-interaction --env=test",
+            "./bin/console doctrine:fixtures:load --no-interaction --env=test",
+            "phpunit"
         ]
     },
     "conflict": {
@@ -88,6 +95,7 @@
         }
     },
     "require-dev": {
+        "dama/doctrine-test-bundle": "^8.3",
         "doctrine/doctrine-fixtures-bundle": "^4.1",
         "friendsofphp/php-cs-fixer": "*",
         "phpstan/phpstan": "^2.1",

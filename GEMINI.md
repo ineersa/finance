@@ -1,10 +1,10 @@
-# Gemini Development Guide
+# Junie Development Guide
 
 This document provides essential information for developers working on the Finance App project.
 
 ## Build and Configuration
 
-This is a Symfony 7 project. The following are the basic steps to get the project running:
+This is a Symfony 7.3 project requiring PHP >=8.2. The following are the basic steps to get the project running:
 
 1.  **Install Dependencies**:
     ```bash
@@ -17,9 +17,10 @@ This is a Symfony 7 project. The following are the basic steps to get the projec
     cp .env .env.local
     ```
 
-3.  **Database Migrations**:
-    Run the following command to apply database migrations:
+3.  **Database Setup**:
+    Run the following commands to set up the database:
     ```bash
+    php bin/console doctrine:database:create
     php bin/console doctrine:migrations:migrate
     ```
 
@@ -27,15 +28,88 @@ This is a Symfony 7 project. The following are the basic steps to get the projec
 
 ## Testing
 
-The project uses PHPUnit for testing.
+The project uses PHPUnit 12.3 for testing with SQLite database for test data isolation. The application uses **DAMA Doctrine Test Bundle** which ensures that data is idempotent between tests by wrapping tests into transactions, preventing test data interference.
+
+### Test Database Configuration
+
+The project uses SQLite database for testing as configured in `.env.test`:
+```
+DATABASE_URL="sqlite:///%kernel.project_dir%/var/data/test.sqlite"
+```
+
+### Required Test Configuration Files
+
+Before running tests, ensure these files exist:
+
+1. **phpunit.xml** - Main PHPUnit configuration:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   
+   <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+            backupGlobals="false"
+            colors="true"
+            bootstrap="tests/bootstrap.php"
+   >
+       <php>
+           <ini name="display_errors" value="1" />
+           <ini name="error_reporting" value="-1" />
+           <server name="APP_ENV" value="test" force="true" />
+           <server name="SHELL_VERBOSITY" value="-1" />
+           <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
+           <server name="SYMFONY_PHPUNIT_VERSION" value="12.3" />
+           <env name="KERNEL_CLASS" value="App\Kernel" />
+       </php>
+
+       <testsuites>
+           <testsuite name="Project Test Suite">
+               <directory>tests</directory>
+           </testsuite>
+       </testsuites>
+
+       <source>
+           <include>
+               <directory suffix=".php">src</directory>
+           </include>
+       </source>
+   </phpunit>
+   ```
+
+2. **tests/bootstrap.php** - Test bootstrap file:
+   ```php
+   <?php
+   
+   use Symfony\Component\Dotenv\Dotenv;
+   
+   require dirname(__DIR__).'/vendor/autoload.php';
+   
+   if (file_exists(dirname(__DIR__).'/config/bootstrap.php')) {
+       require dirname(__DIR__).'/config/bootstrap.php';
+   } elseif (method_exists(Dotenv::class, 'bootEnv')) {
+       (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+   }
+   ```
 
 ### Running Tests
 
-To run the entire test suite, use the following command:
+**Recommended**: Use the integrated composer command that handles all test setup:
 
 ```bash
-php bin/console doctrine:database:create --env=test
-php bin/console doctrine:schema:create --env=test
+composer test
+```
+
+This command automatically:
+1. Clears the test environment cache
+2. Creates/updates the test database schema
+3. Loads fixture data
+4. Runs all tests
+
+**Manual alternative**: To run tests manually, you need to prepare the test database first:
+
+```bash
+php bin/console cache:clear --env=test
+php bin/console doctrine:schema:create --no-interaction --env=test
+php bin/console doctrine:fixtures:load --no-interaction --env=test
 php bin/phpunit
 ```
 
@@ -47,9 +121,9 @@ New tests should be placed in the `tests/` directory. You can use the `make:test
 php bin/console make:test
 ```
 
-For example, to create a test for a controller, you can create a file in `tests/Controller/` and extend `Symfony\Bundle\FrameworkBundle\Test\WebTestCase`.
+For example, to create a test for a controller, create a file in `tests/Controller/` and extend `Symfony\Bundle\FrameworkBundle\Test\WebTestCase`.
 
-Here is an example of a simple test for the `WelcomeController`:
+Here is an example of a simple test:
 
 ```php
 <?php
@@ -58,49 +132,110 @@ namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class WelcomeControllerTest extends WebTestCase
+class ExampleControllerTest extends WebTestCase
 {
-    public function testIndex(): void
+    public function testExample(): void
     {
         $client = static::createClient();
         $client->request('GET', '/');
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Personal Finance App');
+        $this->assertSelectorExists('body');
     }
 }
 ```
 
 ## Code Style and Static Analysis
 
-This project uses `friendsofphp/php-cs-fixer` to enforce a consistent code style and `phpstan/phpstan` for static analysis.
+This project uses custom Composer scripts for code quality tools:
 
-### Linting and Code Style
+### PHP-CS-Fixer
 
-You can run the linter and code style fixer with the following commands:
+You can run the code style fixer with the following commands:
 
 ```bash
-composer lint
-composer lint:fix
+composer cs-fix    # Apply fixes
+composer cs-check  # Check for issues without fixing
 ```
+
+Configuration is in `.php-cs-fixer.dist.php`.
 
 ### PHPStan
 
-To run PHPStan, use the following command:
+To run PHPStan static analysis, use:
 
 ```bash
 composer phpstan
 ```
 
-You may need to create a `phpstan.neon` file in the root of the project to configure PHPStan. Here is an example configuration that includes the Doctrine extension:
+Configuration is in `phpstan.neon.dist` at level 6, analyzing `src` and `tests` directories with custom tmpDir at `var/phpstan`.
 
-```neon
-includes:
-    - vendor/phpstan/phpstan-doctrine/extension.neon
+### Combined Linting
 
-parameters:
-    level: 8
-    paths:
-        - src
-        - tests
+To run both PHP-CS-Fixer and PHPStan together:
+
+```bash
+composer lint
 ```
+
+## Project Architecture
+
+### Key Dependencies
+
+- **Symfony 7.3**: Core framework
+- **EasyAdmin Bundle 4.24**: Admin interface
+- **Gedmo Doctrine Extensions**: Timestampable and other behaviors
+- **Doctrine**: ORM and migrations
+- **PHPUnit 12.3**: Testing framework
+- **PHPStan**: Static analysis
+
+### Entity Structure
+
+The project includes the following main entities with Doctrine ORM:
+
+- **User**: Implements Symfony security interfaces, uses Gedmo timestampable trait
+- **Transaction**: Financial transaction records
+- **Statement**: Bank statements
+- **Source**: Data sources
+- **Category**: Transaction categories
+
+All entities use modern Symfony 7.3 features and PHP 8.2+ attributes for configuration.
+
+### Development Commands
+
+```bash
+# Database
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:database:create --env=test
+
+# Code Quality
+composer cs-fix
+composer phpstan
+composer lint
+
+# Testing
+php bin/phpunit
+
+# Symfony
+php bin/console make:test
+php bin/console cache:clear
+```
+
+## Functional Testing
+
+You can test functionality in the browser at: http://finance.ineersa.local/
+
+**Login Credentials**:
+- Email: admin@test.com
+- Password: admin
+
+Always test new functionality and changes using browser developer tools to ensure proper behavior.
+
+## Important Notes for Development
+
+- This project uses PHP 8.2+ features and Symfony 7.3
+- PHPUnit configuration is critical - tests will fail without proper `phpunit.xml` and `tests/bootstrap.php`
+- The project uses modern Doctrine attributes instead of annotations
+- Gedmo extensions are available for entities (timestampable, sluggable, etc.)
+- EasyAdmin is configured for admin interface development

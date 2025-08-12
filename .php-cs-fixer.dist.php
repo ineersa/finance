@@ -37,7 +37,7 @@ return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setFinder(
         (new PhpCsFixer\Finder())
-            ->in(__DIR__.'/{.phpstan,demo,examples,fixtures,src}')
+            ->in(__DIR__.'/{.phpstan,demo,examples,fixtures,src,tests}')
             ->append([__FILE__])
             ->exclude('var')
     );

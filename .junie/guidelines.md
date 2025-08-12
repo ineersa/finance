@@ -1,157 +1,241 @@
-# Project Guidelines (Advanced)
+# Junie Development Guide
 
-This document captures project-specific knowledge to speed up advanced development on the Finance (Symfony 7.3, PHP ≥ 8.2) application.
+This document provides essential information for developers working on the Finance App project.
 
-## 1) Build and Configuration
+## Build and Configuration
 
-- Runtime matrix
-  - PHP: ≥ 8.2 with intl, ctype, iconv, json, pdo_mysql
-  - DB: MySQL/MariaDB (tested against MySQL 8.0.32)
-  - Node is NOT required (uses Symfony Asset Mapper + Importmap)
+This is a Symfony 7.3 project requiring PHP >=8.2. The following are the basic steps to get the project running:
 
-- Environment
-  - Core env vars: `APP_ENV`, `APP_SECRET`, `DATABASE_URL`, `MAILER_DSN`
-  - Local overrides: use `.env.local` (do not commit secrets). Example:
-    ```dotenv
-    APP_ENV=dev
-    APP_SECRET=<random 32 chars>
-    DATABASE_URL="mysql://USER:PASSWORD@127.0.0.1:3306/finance?serverVersion=8.0.32&charset=utf8mb4"
-    MAILER_DSN=mailjet+api://<public>:<secret>@default
-    ```
-    
-- Install / bootstrap
-  - Dependencies: `composer install`
-  - Symfony Flex auto-scripts will run: `assets:install`, `importmap:install`
-  - Importmap: to add a browser dependency: `php bin/console importmap:require <pkg>` (kept in `importmap.php`)
-
-- Database
-  - Create DB: `php bin/console doctrine:database:create` (if not present)
-  - Migrate: `php bin/console doctrine:migrations:migrate -n`
-  - Create admin user (ROLE_ADMIN needed for back-office):
+1.  **Install Dependencies**:
     ```bash
-    php bin/console app:create-user admin@example.com <password> --role=ROLE_ADMIN
+    composer install
     ```
 
-- Running the app
-  - Using PHP built-in server: `php -S 127.0.0.1:8000 -t public`
-  - Or using the Symfony CLI: `symfony server:start -d`
-  - Back-office (EasyAdmin) is under `/home` (see `DashboardController`), guarded by `ROLE_ADMIN`.
+2.  **Configure Environment**:
+    Create a `.env.local` file by copying `.env` and customize the variables, especially the database connection string.
+    ```bash
+    cp .env .env.local
+    ```
 
-- Assets
-  - Asset mapper entrypoint for admin is `assets/admin.js` (registered via `DashboardController::configureAssets()` -> `addAssetMapperEntry('admin')`).
-  - Styles are under `assets/styles`, Stimulus controllers under `assets/controllers` (Stimulus bundle installed). If you add controllers, ensure importmap has the proper packages.
-  - For prod, precompile assets: `php bin/console asset-map:compile` and warmup cache: `php bin/console cache:warmup --env=prod`.
+3.  **Database Setup**:
+    Run the following commands to set up the database:
+    ```bash
+    php bin/console doctrine:database:create
+    php bin/console doctrine:migrations:migrate
+    ```
 
-## 2) Testing
+**Important Note on Environment Files**: Any files ending in `.local` (e.g., `.env.local`, `.env.dev.local`) are intended for local overrides and should **never** be modified by automated tooling. These files are specific to your local environment.
 
-This repository does not ship with PHPUnit preconfigured. You have two options depending on scope:
+## Testing
 
-- Quick smoke tests (no framework): Use short, framework-free PHP scripts for fast checks (suitable for enums, small services that don’t need Kernel).
-- Full test suite (recommended for ongoing work): Add PHPUnit or Symfony PHPUnit Bridge and commit `phpunit.xml.dist` + tests/.
+The project uses PHPUnit 12.3 for testing with SQLite database for test data isolation. The application uses **DAMA Doctrine Test Bundle** which ensures that data is idempotent between tests by wrapping tests into transactions, preventing test data interference.
 
-### 2.1 Quick smoke test (example we validated)
+### Test Database Configuration
 
-For simple units like enums, create a temporary script and run it via PHP. Example content (we executed this successfully locally):
-
-```php
-<?php
-declare(strict_types=1);
-require __DIR__ . '/../vendor/autoload.php';
-use App\Enum\TransactionTypeEnum;
-$failures = [];
-try {
-    $credit = TransactionTypeEnum::Credit;
-    $debit = TransactionTypeEnum::Debit;
-} catch (Throwable $e) { $failures[] = $e->getMessage(); }
-if (($credit->value ?? null) !== 'credit') $failures[] = 'Credit value mismatch';
-if (($debit->value ?? null) !== 'debit')   $failures[] = 'Debit value mismatch';
-if ($credit === $debit)                    $failures[] = 'Enum cases should be distinct';
-if ($failures) { fwrite(STDERR, implode("\n", $failures)."\n"); exit(1);} 
-fwrite(STDOUT, "OK\n");
+The project uses SQLite database for testing as configured in `.env.test`:
+```
+DATABASE_URL="sqlite:///%kernel.project_dir%/var/data/test.sqlite"
 ```
 
-- Run: `php path/to/script.php`
-- Exit code 0 indicates success; non-zero indicates failure with reasons.
-- Clean up after: remove the temporary script from the repo.
+### Required Test Configuration Files
 
-Notes:
-- These scripts are ideal for demonstrating a test workflow without introducing a test framework or external services (DB, Mailer). Keep them self-contained and side-effect free.
+Before running tests, ensure these files exist:
 
-### 2.2 Full PHPUnit setup (recommended for sustained development)
+1. **phpunit.xml** - Main PHPUnit configuration:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   
+   <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+            backupGlobals="false"
+            colors="true"
+            bootstrap="tests/bootstrap.php"
+   >
+       <php>
+           <ini name="display_errors" value="1" />
+           <ini name="error_reporting" value="-1" />
+           <server name="APP_ENV" value="test" force="true" />
+           <server name="SHELL_VERBOSITY" value="-1" />
+           <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
+           <server name="SYMFONY_PHPUNIT_VERSION" value="12.3" />
+           <env name="KERNEL_CLASS" value="App\Kernel" />
+       </php>
 
-If you need proper unit/functional testing:
+       <testsuites>
+           <testsuite name="Project Test Suite">
+               <directory>tests</directory>
+           </testsuite>
+       </testsuites>
 
-- phpunit/phpunit is already present in require-dev (currently ^12.x). You can run vendor/bin/phpunit once you add a minimal phpunit.xml.dist.
-- Optionally add symfony/phpunit-bridge for extended integration with Symfony (simple-phpunit, deprecations handling).
+       <source>
+           <include>
+               <directory suffix=".php">src</directory>
+           </include>
+       </source>
+   </phpunit>
+   ```
 
-Example (optional) to add the bridge:
+2. **tests/bootstrap.php** - Test bootstrap file:
+   ```php
+   <?php
+   
+   use Symfony\Component\Dotenv\Dotenv;
+   
+   require dirname(__DIR__).'/vendor/autoload.php';
+   
+   if (file_exists(dirname(__DIR__).'/config/bootstrap.php')) {
+       require dirname(__DIR__).'/config/bootstrap.php';
+   } elseif (method_exists(Dotenv::class, 'bootEnv')) {
+       (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+   }
+   ```
+
+### Running Tests
+
+**Recommended**: Use the integrated composer command that handles all test setup:
 
 ```bash
-composer require --dev symfony/phpunit-bridge
+composer test
 ```
 
-Then add `phpunit.xml.dist` and create tests under `tests/` with PSR-4 `App\Tests\` (already configured in composer.json). Example minimal test:
+This command automatically:
+1. Clears the test environment cache
+2. Creates/updates the test database schema
+3. Loads fixture data
+4. Runs all tests
+
+**Manual alternative**: To run tests manually, you need to prepare the test database first:
+
+```bash
+php bin/console cache:clear --env=test
+php bin/console doctrine:schema:create --no-interaction --env=test
+php bin/console doctrine:fixtures:load --no-interaction --env=test
+php bin/phpunit
+```
+
+### Creating New Tests
+
+New tests should be placed in the `tests/` directory. You can use the `make:test` command to generate a new test class:
+
+```bash
+php bin/console make:test
+```
+
+For example, to create a test for a controller, create a file in `tests/Controller/` and extend `Symfony\Bundle\FrameworkBundle\Test\WebTestCase`.
+
+Here is an example of a simple test:
 
 ```php
 <?php
-declare(strict_types=1);
-namespace App\Tests\Unit;
-use PHPUnit\Framework\TestCase;
-use App\Enum\TransactionTypeEnum;
-final class TransactionTypeEnumTest extends TestCase {
-    public function testValues(): void {
-        self::assertSame('credit', TransactionTypeEnum::Credit->value);
-        self::assertSame('debit',  TransactionTypeEnum::Debit->value);
+
+namespace App\Tests\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+
+class ExampleControllerTest extends WebTestCase
+{
+    public function testExample(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Personal Finance App');
+        $this->assertSelectorExists('body');
     }
 }
 ```
 
-- Run: `vendor/bin/phpunit` or `vendor/bin/simple-phpunit` (if using the bridge).
-- For functional tests with Kernel, extend `Symfony\Bundle\FrameworkBundle\Test\KernelTestCase` and set `KERNEL_CLASS=App\Kernel` in PHPUnit config.
-- Use the `when@test` config in `config/packages/*` (see `security.yaml`) to speed up password hashing and avoid external dependencies.
+## Code Style and Static Analysis
 
-### 2.3 Guidelines on adding new tests
+This project uses custom Composer scripts for code quality tools:
 
-- Prefer unit tests for pure domain code (Enums, Value Objects, simple services) – fast and isolated.
-- For DB-dependent code, rely on transaction rollbacks or a dedicated test DB. Configure `DATABASE_URL` for test env via `.env.test.local`.
-- Keep tests deterministic: no reliance on wall clock or network. Inject clocks or use fakes where applicable.
+### PHP-CS-Fixer
 
-## 3) Additional Development Information
+You can run the code style fixer with the following commands:
 
-- Coding style
-  - Use PHP-CS-Fixer (already required in dev):
-    ```bash
-    ./vendor/bin/php-cs-fixer fix src
-    ```
-  - Adopt Symfony coding standards; run fixer before commits.
+```bash
+composer cs-fix    # Apply fixes
+composer cs-check  # Check for issues without fixing
+```
 
-- Doctrine and data model
-  - DoctrineBundle and ORM are available. Manage schema via migrations only; do not sync-metadata in production.
-  - Extensions: `gedmo/doctrine-extensions` with `stof/doctrine-extensions-bundle` are installed; prefer their annotations/attributes where appropriate.
+Configuration is in `.php-cs-fixer.dist.php`.
 
-- Security
-  - Access control: `/home` requires `ROLE_ADMIN`; `/` and `/login` are public in `config/packages/security.yaml`.
-  - Login throttling enabled with low thresholds in `main` firewall – be mindful during E2E tests.
+### PHPStan
 
-- Admin (EasyAdmin)
-  - Dashboard route: `/home` (`#[AdminDashboard(routePath: '/home')]`).
-  - Menu wired for Users CRUD; add new sections via `configureMenuItems()`.
+To run PHPStan static analysis, use:
 
-- Debugging
-  - Symfony Web Profiler is enabled in `dev`. Access `_profiler` from dev toolbar or `/ _profiler` paths.
-  - Logs: `var/log/dev.log`, `var/log/prod.log`.
-  - Useful commands: `bin/console debug:container`, `debug:router`, `cache:clear`, `cache:warmup`.
+```bash
+composer phpstan
+```
 
-- Assets & Stimulus
-  - Stimulus controllers live under `assets/controllers`. The admin password generator is an example controller (`assets/controllers/admin/password_generator_controller.js`).
-  - If you add controllers requiring new npm libs, use `importmap:require` to pin them.
+Configuration is in `phpstan.neon.dist` at level 6, analyzing `src` and `tests` directories with custom tmpDir at `var/phpstan`.
 
-- CI considerations
-  - Cache Composer (`vendor/`) and Symfony cache (`var/cache/`), but avoid committing them.
-  - For DB, run migrations in CI before functional tests; consider ephemeral MySQL service.
+### Combined Linting
 
----
+To run both PHP-CS-Fixer and PHPStan together:
 
-Meta: A quick smoke test was created and executed locally to validate the example process; it has been removed to keep the repo clean. For persistent testing, prefer adding PHPUnit as outlined above.
+```bash
+composer lint
+```
 
-Verification (2025-08-11 23:10 local time): Executed scripts/tmp_smoke_enum.php — output "OK" and exit code 0.
+## Project Architecture
+
+### Key Dependencies
+
+- **Symfony 7.3**: Core framework
+- **EasyAdmin Bundle 4.24**: Admin interface
+- **Gedmo Doctrine Extensions**: Timestampable and other behaviors
+- **Doctrine**: ORM and migrations
+- **PHPUnit 12.3**: Testing framework
+- **PHPStan**: Static analysis
+
+### Entity Structure
+
+The project includes the following main entities with Doctrine ORM:
+
+- **User**: Implements Symfony security interfaces, uses Gedmo timestampable trait
+- **Transaction**: Financial transaction records
+- **Statement**: Bank statements
+- **Source**: Data sources
+- **Category**: Transaction categories
+
+All entities use modern Symfony 7.3 features and PHP 8.2+ attributes for configuration.
+
+### Development Commands
+
+```bash
+# Database
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:database:create --env=test
+
+# Code Quality
+composer cs-fix
+composer phpstan
+composer lint
+
+# Testing
+php bin/phpunit
+
+# Symfony
+php bin/console make:test
+php bin/console cache:clear
+```
+
+## Functional Testing
+
+You can test functionality in the browser at: http://finance.ineersa.local/
+
+**Login Credentials**:
+- Email: admin@test.com  
+- Password: admin
+
+Always test new functionality and changes using browser developer tools to ensure proper behavior.
+
+## Important Notes for Development
+
+- This project uses PHP 8.2+ features and Symfony 7.3
+- PHPUnit configuration is critical - tests will fail without proper `phpunit.xml` and `tests/bootstrap.php`
+- The project uses modern Doctrine attributes instead of annotations
+- Gedmo extensions are available for entities (timestampable, sluggable, etc.)
+- EasyAdmin is configured for admin interface development
