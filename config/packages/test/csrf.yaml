@@ -1,5 +1,0 @@
-# Disable CSRF protection for tests to allow proper testing of delete actions
-framework:
-    form:
-        csrf_protection: false
-    csrf_protection: false

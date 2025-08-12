@@ -3,8 +3,6 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Category;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -28,10 +26,9 @@ class CategoryCrudController extends AbstractCrudController
             ->setPaginatorPageSize(50);
     }
 
-
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id');
+        yield IdField::new('id')->onlyOnIndex();
         yield TextField::new('icon')
             ->setTemplatePath('admin/field/icon_field.html.twig');
         yield TextField::new('name');

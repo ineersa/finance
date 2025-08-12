@@ -4,6 +4,7 @@ namespace App\Tests\Controller\Admin;
 
 use App\Entity\Source;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class SourceCrudControllerTest extends WebTestCase
@@ -13,8 +14,9 @@ class SourceCrudControllerTest extends WebTestCase
         $client = static::createClient();
 
         // Login as admin user
+        /** @var UserRepository $userRepository */
         $userRepository = static::getContainer()->get('doctrine')->getRepository(User::class);
-        $testUser = $userRepository->findOneByEmail('admin@test.com');
+        $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
 
         $client->loginUser($testUser);
 
@@ -34,7 +36,7 @@ class SourceCrudControllerTest extends WebTestCase
 
         // Login as admin user
         $userRepository = static::getContainer()->get('doctrine')->getRepository(User::class);
-        $testUser = $userRepository->findOneByEmail('admin@test.com');
+        $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
 
         $client->loginUser($testUser);
 
@@ -57,7 +59,7 @@ class SourceCrudControllerTest extends WebTestCase
 
         // Login as admin user
         $userRepository = static::getContainer()->get('doctrine')->getRepository(User::class);
-        $testUser = $userRepository->findOneByEmail('admin@test.com');
+        $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
 
         $client->loginUser($testUser);
 
@@ -109,7 +111,7 @@ class SourceCrudControllerTest extends WebTestCase
 
         // Login as admin user
         $userRepository = static::getContainer()->get('doctrine')->getRepository(User::class);
-        $testUser = $userRepository->findOneByEmail('admin@test.com');
+        $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
 
         $client->loginUser($testUser);
 
@@ -145,7 +147,7 @@ class SourceCrudControllerTest extends WebTestCase
 
         // Login as admin user
         $userRepository = static::getContainer()->get('doctrine')->getRepository(User::class);
-        $testUser = $userRepository->findOneByEmail('admin@test.com');
+        $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
 
         $client->loginUser($testUser);
 
@@ -196,7 +198,7 @@ class SourceCrudControllerTest extends WebTestCase
 
         // Login as admin user
         $userRepository = static::getContainer()->get('doctrine')->getRepository(User::class);
-        $testUser = $userRepository->findOneByEmail('admin@test.com');
+        $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
 
         $client->loginUser($testUser);
 
@@ -212,14 +214,34 @@ class SourceCrudControllerTest extends WebTestCase
         // Count sources before deletion
         $initialCount = \count($sourceRepository->findAll());
 
-        // Submit delete request directly (CSRF is disabled for test environment)
-        $client->request('POST', '/home/source/'.$sourceId.'/delete');
+        // Access the sources list page
+        $crawler = $client->request('GET', '/home/source');
+
+        // Assert successful response
+        $this->assertResponseIsSuccessful();
+
+        // The index page includes a hidden delete form with a valid CSRF token
+        $deleteForm = $crawler->filter('form#delete-form');
+        $this->assertGreaterThan(0, $deleteForm->count(), 'Hidden delete form not found on page');
+
+        $csrfInput = $deleteForm->filter('input[name="token"]');
+        $this->assertGreaterThan(0, $csrfInput->count(), 'CSRF token input not found in delete form');
+
+        $csrfToken = $csrfInput->attr('value');
+        $this->assertNotEmpty($csrfToken, 'CSRF token value is empty');
+
+        // Call single delete action for the specific Source id with the CSRF token
+        $client->request('POST', '/home/source/'.$sourceId.'/delete', [
+            'token' => $csrfToken,
+        ]);
 
         // Assert redirect to list page (successful deletion)
         $this->assertResponseRedirects();
+        $client->followRedirect();
 
         // Verify the source was deleted from the database
         $deletedSource = $sourceRepository->find($sourceId);
+
         $this->assertNull($deletedSource, 'Source should be deleted from database');
 
         // Verify the total count decreased by 1
