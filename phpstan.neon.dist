@@ -6,4 +6,5 @@ parameters:
   tmpDir: var/phpstan
   inferPrivatePropertyTypeFromConstructor: true
   checkMissingCallableSignature: false
-includes: []
+includes:
+  - phpstan-baseline.neon
