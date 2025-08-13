@@ -20,7 +20,7 @@
 ###< friendsofphp/php-cs-fixer ###
 
 ###> phpunit/phpunit ###
-/phpunit.xml
+/phpunit.xml.dist
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 
