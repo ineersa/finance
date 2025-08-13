@@ -4,13 +4,16 @@ namespace App\DataFixtures;
 
 use App\Entity\Source;
 use App\Entity\Statement;
-use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StatementFixtures extends Fixture
 {
+    public function __construct(private readonly string $statementsStoragePath)
+    {
+    }
+
     public function load(ObjectManager $manager): void
     {
         $sourceRepo = $manager->getRepository(Source::class);
@@ -25,7 +28,7 @@ class StatementFixtures extends Fixture
         }
 
         $publicFixturePath = __DIR__.'/../../public/storage/fixtures/statement_fixture.csv';
-        $storagePath = $_ENV['STATEMENTS_STORAGE_PATH'] ?? '/var/www/storage/';
+        $storagePath = $this->statementsStoragePath;
         $filesystem = new Filesystem();
         if (!$filesystem->exists($storagePath)) {
             $filesystem->mkdir($storagePath, 0755);
@@ -36,7 +39,7 @@ class StatementFixtures extends Fixture
 
         $statement = new Statement();
         $statement->setFilename($targetFilename);
-        $statement->setUploadedAt(new DateTimeImmutable());
+        $statement->setUploadedAt(new \DateTimeImmutable());
         $statement->setSource($source);
         // Optional statement_date left null by default
 

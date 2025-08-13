@@ -86,7 +86,11 @@
             "./bin/console doctrine:fixtures:load --no-interaction --env=test"
         ],
         "test": ["@test:prepare", "@phpunit"],
-        "phpstan:baseline": "vendor/bin/phpstan --configuration=phpstan.neon.dist --generate-baseline=phpstan-baseline.neon"
+        "phpstan:baseline": "vendor/bin/phpstan --configuration=phpstan.neon.dist --generate-baseline=phpstan-baseline.neon",
+        "final-check" : [
+            "@lint",
+            "@test"
+        ]
     },
     "conflict": {
         "symfony/symfony": "*"

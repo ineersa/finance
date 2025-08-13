@@ -10,6 +10,27 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class StatementCrudControllerTest extends WebTestCase
 {
+    private string $storagePath;
+    /** @var string[] */
+    private array $filesToCleanup = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->storagePath = '';
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->filesToCleanup as $path) {
+            if ('' !== $path && file_exists($path)) {
+                @unlink($path);
+            }
+        }
+        $this->filesToCleanup = [];
+        parent::tearDown();
+    }
+
     public function testStatementsListPageLoadsSuccessfully(): void
     {
         $client = static::createClient();
@@ -57,9 +78,14 @@ class StatementCrudControllerTest extends WebTestCase
         $this->assertNotNull($source, 'No source found in fixtures');
 
         // Build form data
+        /** @var \Symfony\Component\DomCrawler\Form $form */
         $form = $crawler->selectButton('Create')->form();
-        $form['Statement[statement_file]']->upload($uploaded);
-        $form['Statement[source]']->select($source->getId());
+        /** @var \Symfony\Component\DomCrawler\Field\FileFormField $fileField */
+        $fileField = $form['Statement[statement_file]'];
+        $fileField->upload($uploaded);
+        /** @var \Symfony\Component\DomCrawler\Field\ChoiceFormField $sourceField */
+        $sourceField = $form['Statement[source]'];
+        $sourceField->select($source->getId());
         // Leave statement_date empty (optional)
 
         $client->submit($form);
@@ -67,6 +93,7 @@ class StatementCrudControllerTest extends WebTestCase
         if ($client->getResponse()->isRedirect() && str_contains($client->getResponse()->headers->get('Location'), '/home/statement/new')) {
             $client->followRedirect();
             $this->assertResponseIsSuccessful();
+            // @phpstan-ignore-next-line: keep informative assertion for redirect branch
             $this->assertTrue(true, 'Create had validation errors - redirected back to create page');
         } else {
             $this->assertResponseRedirects();
@@ -78,6 +105,10 @@ class StatementCrudControllerTest extends WebTestCase
             $this->assertNotNull($created);
             $this->assertNotEmpty($created->getFilename());
             $this->assertNotNull($created->getUploadedAt());
+
+            $savedPath = rtrim($this->getStoragePath(), '/').'/'.$created->getFilename();
+            $this->assertFileExists($savedPath, 'Uploaded statement file was not saved to storage');
+            $this->filesToCleanup[] = $savedPath;
         }
     }
 
@@ -115,6 +146,7 @@ class StatementCrudControllerTest extends WebTestCase
         $anotherSource = $sourceRepository->findOneBy(['id' => $statement->getSource()->getId() + 1]) ?? $sourceRepository->findOneBy([]);
         $this->assertNotNull($anotherSource);
 
+        /** @var \Symfony\Component\DomCrawler\Form $form */
         $form = $crawler->selectButton('Save changes')->form([
             'Statement[source]' => $anotherSource->getId(),
         ]);
@@ -141,6 +173,20 @@ class StatementCrudControllerTest extends WebTestCase
 
         $initialCount = \count($repo->findAll());
 
+        // Ensure there is a physical file in storage for this statement
+        $filename = (string) $statement->getFilename();
+        if ('' === $filename) {
+            $filename = 'test-to-delete-'.bin2hex(random_bytes(6)).'.csv';
+            $em = static::getContainer()->get('doctrine')->getManager();
+            $statement->setFilename($filename);
+            $em->flush();
+        }
+        $filePath = rtrim($this->getStoragePath(), '/').'/'.$filename;
+        if (!file_exists($filePath)) {
+            file_put_contents($filePath, "Description,Type\nFixture,DELETE\n");
+        }
+        $this->assertFileExists($filePath, 'Statement storage file to be deleted does not exist');
+
         $crawler = $client->request('GET', '/home/statement');
         $this->assertResponseIsSuccessful();
 
@@ -161,5 +207,24 @@ class StatementCrudControllerTest extends WebTestCase
         $this->assertNull($deleted);
         $finalCount = \count($repo->findAll());
         $this->assertEquals($initialCount - 1, $finalCount);
+
+        // file must be removed from storage
+        $this->assertFileDoesNotExist($filePath, 'Statement storage file was not removed upon deletion');
+        // If for some reason it still exists (test failure), ensure cleanup later
+        if (file_exists($filePath)) {
+            $this->filesToCleanup[] = $filePath;
+        }
+    }
+
+    private function getStoragePath(): string
+    {
+        if ('' === $this->storagePath) {
+            $this->storagePath = (string) static::getContainer()->getParameter('statements_storage_path');
+            if (!is_dir($this->storagePath)) {
+                @mkdir($this->storagePath, 0755, true);
+            }
+        }
+
+        return $this->storagePath;
     }
 }

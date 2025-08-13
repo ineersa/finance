@@ -1,0 +1,5 @@
+# Test environment service/parameter overrides
+# This ensures paths using %kernel.project_dir% are resolved by the container,
+# avoiding reliance on .env.test variable interpolation.
+parameters:
+    statements_storage_path: '%kernel.project_dir%/var/data/'

@@ -391,7 +391,7 @@ Always test new functionality and changes using browser developer tools to ensur
 - The project uses modern Doctrine attributes instead of annotations
 - Gedmo extensions are available for entities (timestampable, sluggable, etc.)
 - EasyAdmin is configured for admin interface development
-- If you need to create something, first check if it can be done with `maker` bundle and symfony command  
+- If you need to create something, first check if it can be done with `maker` bundle and symfony command
 
 ## Doctrine
 
@@ -400,4 +400,10 @@ Always use the explicit criteria-based methods instead of dynamic methods like `
 /** @var UserRepository $userRepository */
 $userRepository = static::getContainer()->get(UserRepository::class);
 $testUser = $userRepository->findOneBy(['email' => 'admin@test.com']);
+```
+
+## **IMPORTANT** Before task complete
+Always run before task is complete, you can't say that it's complete without running it.
+```bash
+composer final-check
 ```
