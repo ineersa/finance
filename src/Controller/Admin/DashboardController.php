@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Category;
 use App\Entity\Source;
+use App\Entity\Statement;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -46,6 +47,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Content');
         yield MenuItem::linkToCrud('Categories', 'fa fa-solid fa-tags', Category::class);
         yield MenuItem::linkToCrud('Sources', 'fa fa-solid fa-database', Source::class);
+        yield MenuItem::linkToCrud('Statements', 'fa fa-solid fa-file', Statement::class);
 
         yield MenuItem::section('Administrative');
         yield MenuItem::linkToCrud('Users', 'fa fa-solid fa-users', User::class);
