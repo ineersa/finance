@@ -141,15 +141,12 @@ class TransactionCrudController extends AbstractCrudController
 
         $categoryAssoc = AssociationField::new('category')
             ->setFormTypeOptions([
-                'choice_label' => 'name',
-                'placeholder' => 'Select a Category',
-                'class' => Category::class,
-                'required' => true,
-                'choice_attr' => static function (Category $category) {
-                    return ['data-icon' => $category->getIcon()];
+                'choice_label' => static function (Category $category) {
+                    return \sprintf('<i class="%s" style="margin-right: 5px;"></i> %s', $category->getIcon(), $category->getName());
                 },
             ])
             ->setLabel('Category')
+            ->renderAsHtml()
             ->onlyOnForms();
 
         if (Crud::PAGE_INDEX === $pageName) {

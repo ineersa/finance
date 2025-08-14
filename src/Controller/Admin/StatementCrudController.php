@@ -49,8 +49,8 @@ class StatementCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        // No SHOW/DETAIL action per requirements; keep defaults (batch delete is available by default)
-        return $actions;
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL);
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -68,14 +68,15 @@ class StatementCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $id = IdField::new('id')->onlyOnIndex();
-        $filename = TextField::new('filename')->onlyOnIndex();
-        $processedAt = DateTimeField::new('processed_at', 'Processed At')->setSortable(true)->onlyOnIndex();
+        $id = IdField::new('id')->onlyOnIndex()->onlyOnDetail();
+        $filename = TextField::new('filename')->onlyOnIndex()->onlyOnDetail();
+        $processedAt = DateTimeField::new('processed_at', 'Processed At')->setSortable(true)->onlyOnIndex()->onlyOnDetail();
         $statementDate = DateField::new('statement_date', 'Statement Date')->setRequired(false);
 
         // Show source name on index (sortable/filterable); use Association on forms
         $sourceNameIndex = AssociationField::new('source', 'Source')
             ->onlyOnIndex()
+            ->onlyOnDetail()
             ->setSortable(true)
             ->setSortProperty('source.name')
             ->formatValue(static function ($value, $entity) {
@@ -111,9 +112,14 @@ class StatementCrudController extends AbstractCrudController
 
         $uploadedAt = DateTimeField::new('uploaded_at', 'Uploaded At')->hideOnForm();
 
-        if (Crud::PAGE_INDEX === $pageName) {
+        if (Crud::PAGE_INDEX === $pageName || Crud::PAGE_DETAIL === $pageName) {
             return [
-                $id, $filename, $processedAt, $sourceNameIndex, $statementDate,
+                $id,
+                $filename,
+                $sourceNameIndex,
+                $statementDate,
+                $uploadedAt,
+                $processedAt,
             ];
         }
 
